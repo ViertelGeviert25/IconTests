@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Drawing.Printing;
 using System.IO;
 using System.Runtime.InteropServices;
 
@@ -311,7 +312,6 @@ namespace IconTests
             );
         }
 
-
         public static string GetFileIconAsBase64(string filePath)
         {
             IImageList spiml = null;
@@ -360,7 +360,7 @@ namespace IconTests
 
                     // Position of the text (centred under the symbol)
                     float textX = (width - textSize.Width) / 2;
-                    float textY = iconBitmap.Height;
+                    float textY = iconBitmap.Height + 5;
 
                     g.DrawString(fileName, font, Brushes.Black, new PointF(textX, textY));
                 }

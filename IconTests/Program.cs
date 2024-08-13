@@ -11,10 +11,10 @@ namespace IconTests
             var dir = @"H:\testdata\oletests\extracted";
             dir = @"H:\testdata";
 
-            string filePath = Path.Combine(dir, "sampleserialized.xml"); //);"SamplePNGImage_3mbmb.png"); // "Embedded object.pdf");
+            string filePath = Path.Combine(dir, "SamplePNGImage_3mb.png");
 
             var base64Str = ShellIcon.GetFileIconAsBase64(filePath);
-
+            var l = base64Str.Length;
             var htmlDoc = new HtmlDocument();
 
             HtmlNode embeddedLinkNode = htmlDoc.CreateElement("a");
