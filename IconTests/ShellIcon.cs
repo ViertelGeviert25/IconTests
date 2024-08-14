@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.Drawing.Printing;
 using System.IO;
 using System.Runtime.InteropServices;
 
@@ -12,55 +11,9 @@ namespace IconTests
     /// </summary>
     public static class ShellIcon
     {
-        // https://stackoverflow.com/questions/8499633/how-to-display-base64-images-in-html
-        // https://stackoverflow.com/questions/10889764/how-to-convert-bitmap-to-a-base64-string
-        // https://www.pinvoke.net/default.aspx/shell32.SHGetFileInfo
-        // https://stackoverflow.com/questions/28525925/get-icon-128128-file-type-c-sharp?noredirect=1&lq=1
-
-
-        private const string IID_IImageList = "46EB5926-582E-4017-9FDF-E8998DAA0950";
         private const string DEFAULT_WINDOWS_FONT = "Segoe UI";
-
-        [Flags]
-        private enum SHGFI : uint
-        {
-            /// <summary>get icon</summary>
-            Icon = 0x000000100,
-            /// <summary>get display name</summary>
-            DisplayName = 0x000000200,
-            /// <summary>get type name</summary>
-            TypeName = 0x000000400,
-            /// <summary>get attributes</summary>
-            Attributes = 0x000000800,
-            /// <summary>get icon location</summary>
-            IconLocation = 0x000001000,
-            /// <summary>return exe type</summary>
-            ExeType = 0x000002000,
-            /// <summary>get system icon index</summary>
-            SysIconIndex = 0x000004000,
-            /// <summary>put a link overlay on icon</summary>
-            LinkOverlay = 0x000008000,
-            /// <summary>show icon in selected state</summary>
-            Selected = 0x000010000,
-            /// <summary>get only specified attributes</summary>
-            Attr_Specified = 0x000020000,
-            /// <summary>get large icon</summary>
-            LargeIcon = 0x000000000,
-            /// <summary>get small icon</summary>
-            SmallIcon = 0x000000001,
-            /// <summary>get open icon</summary>
-            OpenIcon = 0x000000002,
-            /// <summary>get shell size icon</summary>
-            ShellIconSize = 0x000000004,
-            /// <summary>pszPath is a pidl</summary>
-            PIDL = 0x000000008,
-            /// <summary>use passed dwFileAttribute</summary>
-            UseFileAttributes = 0x000000010,
-            /// <summary>apply the appropriate overlays</summary>
-            AddOverlays = 0x000000020,
-            /// <summary>Get the index of the overlay in the upper 8 bits of the iIcon</summary>
-            OverlayIndex = 0x000000040,
-        }
+        private const int TEXT_MAX_WIDTH_PER_LINE = 200;
+        private const int TEXT_MIN_WIDTH_PER_LINE = 100;
 
         [StructLayout(LayoutKind.Sequential)]
         public struct SHFILEINFO
@@ -75,229 +28,14 @@ namespace IconTests
             public string szTypeName;
         };
 
-
-        [StructLayout(LayoutKind.Sequential)]
-        public struct RECT
-        {
-            public int left, top, right, bottom;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        public struct POINT
-        {
-            int x;
-            int y;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        public struct IMAGELISTDRAWPARAMS
-        {
-            public int cbSize;
-            public IntPtr himl;
-            public int i;
-            public IntPtr hdcDst;
-            public int x;
-            public int y;
-            public int cx;
-            public int cy;
-            public int xBitmap;    // x offest from the upperleft of bitmap
-            public int yBitmap;    // y offset from the upperleft of bitmap
-            public int rgbBk;
-            public int rgbFg;
-            public int fStyle;
-            public int dwRop;
-            public int fState;
-            public int Frame;
-            public int crEffect;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        public struct IMAGEINFO
-        {
-            public IntPtr hbmImage;
-            public IntPtr hbmMask;
-            public int Unused1;
-            public int Unused2;
-            public RECT rcImage;
-        }
-        [ComImportAttribute()]
-        [GuidAttribute("46EB5926-582E-4017-9FDF-E8998DAA0950")]
-        [InterfaceTypeAttribute(ComInterfaceType.InterfaceIsIUnknown)]
-        public interface IImageList
-        {
-            [PreserveSig]
-            int Add(
-            IntPtr hbmImage,
-            IntPtr hbmMask,
-            ref int pi);
-
-            [PreserveSig]
-            int ReplaceIcon(
-            int i,
-            IntPtr hicon,
-            ref int pi);
-
-            [PreserveSig]
-            int SetOverlayImage(
-            int iImage,
-            int iOverlay);
-
-            [PreserveSig]
-            int Replace(
-            int i,
-            IntPtr hbmImage,
-            IntPtr hbmMask);
-
-            [PreserveSig]
-            int AddMasked(
-            IntPtr hbmImage,
-            int crMask,
-            ref int pi);
-
-            [PreserveSig]
-            int Draw(
-            ref IMAGELISTDRAWPARAMS pimldp);
-
-            [PreserveSig]
-            int Remove(
-            int i);
-
-            [PreserveSig]
-            int GetIcon(
-            int i,
-            int flags,
-            ref IntPtr picon);
-
-            [PreserveSig]
-            int GetImageInfo(
-            int i,
-            ref IMAGEINFO pImageInfo);
-
-            [PreserveSig]
-            int Copy(
-            int iDst,
-            IImageList punkSrc,
-            int iSrc,
-            int uFlags);
-
-            [PreserveSig]
-            int Merge(
-            int i1,
-            IImageList punk2,
-            int i2,
-            int dx,
-            int dy,
-            ref Guid riid,
-            ref IntPtr ppv);
-
-            [PreserveSig]
-            int Clone(
-            ref Guid riid,
-            ref IntPtr ppv);
-
-            [PreserveSig]
-            int GetImageRect(
-            int i,
-            ref RECT prc);
-
-            [PreserveSig]
-            int GetIconSize(
-            ref int cx,
-            ref int cy);
-
-            [PreserveSig]
-            int SetIconSize(
-            int cx,
-            int cy);
-
-            [PreserveSig]
-            int GetImageCount(
-            ref int pi);
-
-            [PreserveSig]
-            int SetImageCount(
-            int uNewCount);
-
-            [PreserveSig]
-            int SetBkColor(
-            int clrBk,
-            ref int pclr);
-
-            [PreserveSig]
-            int GetBkColor(
-            ref int pclr);
-
-            [PreserveSig]
-            int BeginDrag(
-            int iTrack,
-            int dxHotspot,
-            int dyHotspot);
-
-            [PreserveSig]
-            int EndDrag();
-
-            [PreserveSig]
-            int DragEnter(
-            IntPtr hwndLock,
-            int x,
-            int y);
-
-            [PreserveSig]
-            int DragLeave(
-            IntPtr hwndLock);
-
-            [PreserveSig]
-            int DragMove(
-            int x,
-            int y);
-
-            [PreserveSig]
-            int SetDragCursorImage(
-            ref IImageList punk,
-            int iDrag,
-            int dxHotspot,
-            int dyHotspot);
-
-            [PreserveSig]
-            int DragShowNolock(
-            int fShow);
-
-            [PreserveSig]
-            int GetDragImage(
-            ref POINT ppt,
-            ref POINT pptHotspot,
-            ref Guid riid,
-            ref IntPtr ppv);
-
-            [PreserveSig]
-            int GetItemFlags(
-            int i,
-            ref int dwFlags);
-
-            [PreserveSig]
-            int GetOverlayImage(
-            int iOverlay,
-            ref int piIndex);
-        };
-
         private class Shell32
         {
             public const uint SHGFI_ICON = 0x100;
             public const uint SHGFI_LARGEICON = 0x0; // 'Large icon
             public const uint SHGFI_SMALLICON = 0x1; // 'Small icon
 
-            public const int SHIL_LARGE = 0x0;
-            public const int SHIL_SMALL = 0x1;
-            public const int SHIL_EXTRALARGE = 0x2;
-            public const int SHIL_SYSSMALL = 0x3;
-            public const int SHIL_JUMBO = 0x4;
-            public const int SHIL_LAST = 0x4;
-
-            public const int ILD_TRANSPARENT = 0x00000001;
-            public const int ILD_IMAGE = 0x00000020;
-
-            [DllImport("shell32.dll", EntryPoint = "#727")]
-            public extern static int SHGetImageList(int iImageList, ref Guid riid, ref IImageList ppv);
+            //[DllImport("shell32.dll", EntryPoint = "#727")]
+            //public extern static int SHGetImageList(int iImageList, ref Guid riid, ref IImageList ppv);
 
             [DllImport("user32.dll", EntryPoint = "DestroyIcon", SetLastError = true)]
             public static extern int DestroyIcon(IntPtr hIcon);
@@ -312,34 +50,105 @@ namespace IconTests
             );
         }
 
-        public static string GetFileIconAsBase64(string filePath)
+        private static SizeF GetTextSize(string text, Font font)
         {
-            IImageList spiml = null;
-            Guid guil = new Guid(IID_IImageList);//or IID_IImageList
-            Shell32.SHGetImageList(Shell32.SHIL_EXTRALARGE, ref guil, ref spiml);
-            IntPtr hIcon = IntPtr.Zero;
-            SHFILEINFO sfi = new SHFILEINFO();
-            var sizeFileInfo = (uint)Marshal.SizeOf(sfi);
-            var flags = (uint)(SHGFI.SysIconIndex | SHGFI.LargeIcon | SHGFI.UseFileAttributes);
-            Shell32.SHGetFileInfo(filePath, 0, ref sfi, sizeFileInfo, flags);
-            var iImage = sfi.iIcon;
-            spiml.GetIcon(iImage, Shell32.ILD_TRANSPARENT | Shell32.ILD_IMAGE, ref hIcon);
+            Image fakeImage = new Bitmap(1, 1);
+            Graphics graphics = Graphics.FromImage(fakeImage);
+            SizeF size = graphics.MeasureString(text, font);
+            return size;
+        }
 
 
-            //SHFILEINFO shinfo = new SHFILEINFO();
-            //var sizeFileInfo = (uint)Marshal.SizeOf(shinfo);
-            //var flags = Shell32.SHGFI_ICON | Shell32.SHGFI_LARGEICON;
-            //Shell32.SHGetFileInfo(filePath, 0, ref shinfo, sizeFileInfo, flags);
-            //var hIcon = shinfo.iIcon;
+        public static int DrawWrappedText(Graphics graphics, string text, Font font, Brush brush, RectangleF layoutRect, ref PointF point, bool draw)
+        {
+            StringFormat stringFormat = new StringFormat
+            {
+                LineAlignment = StringAlignment.Near,
+                Alignment = StringAlignment.Center,
+                FormatFlags = StringFormatFlags.NoWrap
+            };
+
+            float yOffset = point.Y;
+
+            // Split the text into lines that fit within the layoutRect width
+            string[] words = text.Split(' ');
+            string line = string.Empty;
+
+            var lineCounter = 1;
+
+            var subword = string.Empty;
+            var sep = string.Empty;
+            foreach (string word in words)
+            {
+                subword += word + " ";
+                string testLine = line + (line.Length > 0 ? sep : "") + word;
+                SizeF textSize = graphics.MeasureString(testLine, font);
+
+                if (textSize.Width > layoutRect.Width)
+                {
+                    if (!string.IsNullOrEmpty(line))
+                    {
+                        line += sep;
+                        // Draw the current line
+                        graphics.DrawString(line, font, brush, new PointF(point.X, yOffset), stringFormat);
+                        yOffset += textSize.Height; // Move down for the next line
+                        lineCounter++;
+                    }
+
+                    // Start a new line with the current word
+                    line = word;
+                }
+                else
+                {
+                    // Add the word to the current line
+                    line = testLine;
+                }
+                sep = subword.Length < text.Length ? text.Substring(subword.Length - 1, 1) : string.Empty;
+            }
+
+            // Draw the last line
+            if (line.Length > 0)
+            {
+                graphics.DrawString(line, font, brush, new PointF(point.X, yOffset), stringFormat);
+            }
+
+            // Update the point to the new position after drawing
+            point.Y = yOffset + font.GetHeight(graphics); // Adjust for some margin if needed
+
+            return lineCounter;
+        }
+
+        public static string GetFileIconAsBase64(string filePath, string displayName)
+        {
+            SHFILEINFO shinfo = new SHFILEINFO();
+            var sizeFileInfo = (uint)Marshal.SizeOf(shinfo);
+            var flags = Shell32.SHGFI_ICON | Shell32.SHGFI_LARGEICON;
+            Shell32.SHGetFileInfo(filePath, 0, ref shinfo, sizeFileInfo, flags);
+            var hIcon = shinfo.hIcon;
 
             // Convert the symbol to a bitmap
             Icon icon = Icon.FromHandle(hIcon);
             Bitmap iconBitmap = icon.ToBitmap();
 
+            Font font = new Font(DEFAULT_WINDOWS_FONT, 9);
+            SizeF textSize = GetTextSize(displayName, font);
+
             // Create a new bitmap containing the symbol and the file name
-            int width = Math.Max(iconBitmap.Width, 200); // Width of the image
+            int width = Math.Max(iconBitmap.Width, (int)textSize.Width); // Width of the image
+            if (width > TEXT_MAX_WIDTH_PER_LINE)
+            {
+                width = TEXT_MAX_WIDTH_PER_LINE;
+            }
+
+            float textX = (width) / 2;
+            float textY = 0;
+
+            PointF initialPoint = new PointF(Math.Abs(textX), textY);
+            var lines = DrawWrappedText(Graphics.FromImage(new Bitmap(1, 1)),
+                displayName, font, Brushes.Black, new RectangleF(0, 0, width, 1000), ref initialPoint, false);
+
             // Height of the image (symbol height + space for the file name)
-            int height = iconBitmap.Height + 30;
+            int height = iconBitmap.Height + (5 + (int)font.GetHeight()) * lines + 5;
 
             var sigBase64 = string.Empty;
 
@@ -354,15 +163,16 @@ namespace IconTests
                     g.DrawImage(iconBitmap, (width - iconBitmap.Width) / 2, 0);
 
                     // Draw the file name under the symbol
-                    string fileName = Path.GetFileName(filePath);
-                    Font font = new Font(DEFAULT_WINDOWS_FONT, 10);
-                    SizeF textSize = g.MeasureString(fileName, font);
 
                     // Position of the text (centred under the symbol)
-                    float textX = (width - textSize.Width) / 2;
-                    float textY = iconBitmap.Height + 5;
+                    textX = (width) / 2;
+                    textY = iconBitmap.Height + 5;
 
-                    g.DrawString(fileName, font, Brushes.Black, new PointF(textX, textY));
+                    initialPoint = new PointF(Math.Abs(textX), textY);
+
+                    //g.DrawString(displayName, font, Brushes.Black, new PointF(textX, textY));
+                    DrawWrappedText(g,
+                        displayName, font, Brushes.Black, new RectangleF(0, 0, width, height), ref initialPoint, true);
                 }
 
                 var ms = new MemoryStream();

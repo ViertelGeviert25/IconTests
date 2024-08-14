@@ -9,11 +9,10 @@ namespace IconTests
         public static void Main(string[] args)
         {
             var dir = @"H:\testdata\oletests\extracted";
-            dir = @"H:\testdata";
 
             string filePath = Path.Combine(dir, "SamplePNGImage_3mb.png");
-
-            var base64Str = ShellIcon.GetFileIconAsBase64(filePath);
+            var displayName = "Lorem ipsum dolor sit amer.png".Replace(" ", " ");
+            var base64Str = ShellIcon.GetFileIconAsBase64(filePath, displayName);
             var l = base64Str.Length;
             var htmlDoc = new HtmlDocument();
 
@@ -22,6 +21,7 @@ namespace IconTests
             HtmlNode imgNode = htmlDoc.CreateElement("img");
             imgNode.SetAttributeValue("src", $"data:image/png;base64, {base64Str}");
             imgNode.SetAttributeValue("alt", Path.GetFileName(filePath));
+            imgNode.SetAttributeValue("title", displayName);
             embeddedLinkNode.AppendChild(imgNode);
 
             htmlDoc.DocumentNode.AppendChild(embeddedLinkNode);
